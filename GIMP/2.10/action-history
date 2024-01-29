@@ -1,0 +1,14 @@
+# GIMP action-history
+
+(history-item "select-all" 1)
+(history-item "file-open" 0)
+(history-item "filters-focus-blur" 0)
+(history-item "filters-lens-blur" 0)
+(history-item "file-open-as-layers" 0)
+(history-item "tools-scale" 0)
+(history-item "layers-delete" 0)
+(history-item "file-save-as" 0)
+(history-item "file-export-as" 0)
+(history-item "file-quit" 1)
+
+# end of action-history
