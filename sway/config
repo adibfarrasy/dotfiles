@@ -3,6 +3,24 @@
 # Copy this to ~/.config/sway/config and edit it to your liking.
 #
 # Read `man 5 sway` for a complete reference.
+# Declare Colors:
+set $background #fbf1c7
+set $color_urgent #cc241d
+set $text_color #282828
+set $text_unfoc #fbf1c7
+set $title_bg_unfocused #665c54
+set $title_outline_active #fbf1c7
+set $title_outline_unfocused #665c54
+
+# Set Colors:           Border                   Background          Text          Indicator             Child Border
+client.background       $background
+client.focused          $title_outline_active    $background         $text_color   $title_outline_active $title_outline_active
+client.focused_inactive $title_outline_unfocused $background         $text_color   $text_color           $title_outline_unfocused
+client.unfocused        $title_outline_unfocused $title_bg_unfocused $text_unfoc   $title_outline_active
+client.urgent           $color_urgent            $color_urgent       $color_urgent $color_urgent         $color_urgent
+
+# Remove title text
+for_window [app_id=".*"] title_format " "
 
 ### Variables
 #
@@ -207,7 +225,7 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 bindsym $mod+x exec swaylock -u -f -i /home/adibf/.config/sway/wallpapers/yin-yang-bw.png -s fill
 bindsym $mod+b exec firefox
-gaps inner 9
+gaps inner 6
 
 #
 # Status Bar:
@@ -215,11 +233,11 @@ gaps inner 9
 # Read `man 5 sway-bar` for more information about this section.
 # bar {
 #     position top
-
+#
 #     # When the status_command prints a new line to stdout, swaybar updates.
 #     # The default just shows the current date and time.
 #     status_command while date +'%Y-%m-%d %I:%M:%S %p'; do sleep 1; done
-
+#
 #     colors {
 #         statusline #f9f5d7
 #         background #282828cc
@@ -230,13 +248,13 @@ gaps inner 9
 
 # Volume
 ## pipewire
-# bindsym XF86AudioRaiseVolume exec 'wpctl set-volume @DEFAULT_SINK@ 6%+'
-# bindsym XF86AudioLowerVolume exec 'wpctl set-volume @DEFAULT_SINK@ 6%-'
-# bindsym XF86AudioMute exec 'wpctl set-mute @DEFAULT_SINK@ toggle'
+bindsym XF86AudioRaiseVolume exec 'wpctl set-volume @DEFAULT_SINK@ 6%+'
+bindsym XF86AudioLowerVolume exec 'wpctl set-volume @DEFAULT_SINK@ 6%-'
+bindsym XF86AudioMute exec 'wpctl set-mute @DEFAULT_SINK@ toggle'
 ## pulseaudio
-bindsym XF86AudioRaiseVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ +6%'
-bindsym XF86AudioLowerVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ -6%'
-bindsym XF86AudioMute exec 'pactl set-sink-mute @DEFAULT_SINK@ toggle'
+# bindsym XF86AudioRaiseVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ +6%'
+# bindsym XF86AudioLowerVolume exec 'pactl set-sink-volume @DEFAULT_SINK@ -6%'
+# bindsym XF86AudioMute exec 'pactl set-sink-mute @DEFAULT_SINK@ toggle'
 
 # Brightness
 bindsym XF86MonBrightnessDown exec light -U 10
