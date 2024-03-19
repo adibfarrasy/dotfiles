@@ -87,8 +87,12 @@ in
   # Enable automatic login for the user.
   services.getty.autologinUser = "adibf";
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    permittedInsecurePackages = [
+      "electron-25.9.0"
+    ];
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -98,11 +102,9 @@ in
     dbeaver
     mongosh
     slack
-    postman
-    robo3t
+    # postman
     redis
     openvpn
-    go
     # sway
     dbus-sway-environment
     configure-gtk
@@ -121,6 +123,7 @@ in
     mako
     wdisplays
     waybar
+    wf-recorder
     # audio
     alsa-utils
     sof-firmware
@@ -133,7 +136,7 @@ in
     sumneko-lua-language-server
     libinput
     gcc
-    zellij
+    tmux
     rustup
     dbus-broker
     gimp
@@ -147,8 +150,21 @@ in
     lsof
     obsidian
     git
+    gnome.nautilus
+    qbittorrent
+    zig
+    zls
+    nodejs
+    unzip
+    ffmpeg
+    yarn
+    parted
+    chromium
+    # some Rust library dependencies
+    cmake
+    pkg-config-unwrapped
+    openssl
 ];
-
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -175,7 +191,7 @@ in
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.05"; # Did you read the comment?
+  system.stateVersion = "23.11"; # Did you read the comment?
 
   programs.neovim = {
     enable = true;
@@ -186,7 +202,7 @@ in
   services.pipewire = {
     enable = true;
     pulse.enable = false;
-    alsa.enable = false;
+    alsa.enable = true;
     alsa.support32Bit = true;
   };
 
@@ -216,7 +232,7 @@ in
   };
 
   fonts = {
-    fonts = with pkgs; [
+    packages = with pkgs; [
       noto-fonts
       noto-fonts-cjk
       noto-fonts-emoji
@@ -226,6 +242,7 @@ in
     ];
 
     fontconfig = {
+      enable = true;
       defaultFonts = {
       	monospace = [ "JetBrainsMono" ];
       };
@@ -236,7 +253,7 @@ in
     enableAllFirmware = true;
 
     pulseaudio = {
-      enable = true;
+      enable = false;
       support32Bit = true;
       package = pkgs.pulseaudioFull;
       extraConfig = ''
@@ -257,7 +274,7 @@ load-module module-switch-on-connect
     };
   };
 
-  sound.enable = true;
+  sound.enable = false;
   
   virtualisation.docker.enable = true;
 
@@ -274,14 +291,12 @@ load-module module-switch-on-connect
     };
   };
 
-  environment.etc = {
-	"wireplumber/bluetooth.lua.d/51-bluez-config.lua".text = ''
-		bluez_monitor.properties = {
-			["bluez5.enable-sbc-xq"] = true,
-			["bluez5.enable-msbc"] = true,
-			["bluez5.enable-hw-volume"] = true,
-			["bluez5.headset-roles"] = "[ hsp_hs hsp_ag hfp_hf hfp_ag ]"
-		}
-	'';
+  environment.sessionVariables = rec {
+    XDG_CACHE_HOME  = "$HOME/.cache";
+    XDG_CONFIG_HOME = "$HOME/.config";
+    XDG_DATA_HOME   = "$HOME/.local/share";
+    XDG_STATE_HOME  = "$HOME/.local/state";
   };
+
+  services.locate.enable = true;
 }
