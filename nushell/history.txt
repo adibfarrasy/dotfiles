@@ -1,0 +1,1109 @@
+rm -rf nushell
+exit
+cd .config/nushell
+nvim ./config.nu
+nvim .
+exit
+cdf
+nvim .config/waybar/config
+exit
+waybar
+nvim .config/waybar/config
+waybar
+ls
+exit
+ls -a
+nvim .bashrc
+cd projects/flik-backend
+ls
+nvim .bashrc
+cd
+nvim .bashrc
+exit
+sudo nvim /etc/nixos/configuration.nix
+cd .config/nushell
+nvim .
+$env.LS_COLORS
+cargo install vivid
+nvim gruvbox-dark-soft.yml
+exit
+nvim .
+vivid generate gruvbox-dark-soft
+cd
+vivid generate gruvbox-dark-soft
+cd .config/nushell
+nvim .
+exit
+vivid generate gruvbox-dark-soft
+$env.PATH
+cd .config/nushell
+nvim .
+exit
+$env.PATH
+cd .config/nushell
+nvim .
+cd
+ls
+ls go/bin/
+cd .config/nushell
+nvim env.nu
+exit
+$env.PATH
+go version
+clear
+vivid generate gruvbox-dark-soft
+cd .config/nushell
+nvim config.nu
+exit
+$env.LS_COLORS
+vivid generate gruvbox-dark-soft
+ls
+exit
+cd .config/nushell
+mkdir scripts
+cd scripts/
+nvim sway.nu
+tty
+exit
+tty
+cd .config/nushell
+cd scripts/
+nvim sway.nu
+tty
+if $"(tty)" == "/dev/pts/0" { "hello" }
+nvim sway.nu
+cd ..
+nvim config.nu
+exit
+cd .config/nushell
+nvim config.nu
+exit
+cd .config/nushell
+$env.CONFIG
+$env.HOME
+nvim config.nu
+exit
+cd .config/nushell
+nvim config.nu
+exit
+cd .config/nushell
+nvim config.nu
+nvim env.nu
+exit
+tty
+cd .config/nushell
+nvim config.nu
+exit
+cd projects/flik-backend
+cd checkout/
+nvim .
+exit
+cd "./projects/flik-backend"
+cd
+nvim .config/nushell/scripts/
+cd .config/nushell/scripts/
+nvim flik.nu
+cd ..
+nvim config.nu
+exit
+cdf reward
+cdf(reward)
+cd .config/nushell/scripts/
+nvim flik.nu
+exit
+cdf reward
+cd .config/nushell/
+nvim .
+exit
+cdf reward
+ls
+cd .config/nushell/
+nvim .
+exit
+cdf reward
+cdf checkout
+clear
+exit
+cd .config/nushell/
+nvim config.nu
+clear
+nvim config.nu
+exit
+cdf
+cdf .
+clera
+clear
+git st
+git br
+gdb sync
+exit
+z
+cd .config/nushell/
+ls
+cd scripts/
+nvim aliases.nu
+exit
+z
+cd .config/nushell/
+nvim config.nu
+exit
+z
+zellij
+RUST_BACKTRACE=1 zellij
+cat /tmp/zellij-1000/zellij-log/zellij.log
+clear
+zellij
+sudo  nix-env -p /nix/var/nix/profiles/system --list-generations
+sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+exit
+sudo nix-env --delete-generations -h
+sudo nix-env --help
+nix-env --delete-generations --help
+suod nix-env --delete-generations +3
+sudo nix-env --delete-generations +3
+sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+sudo nix-env --delete-generations +3 --profile /nix/var/nix/profiles/system
+cd .config/nushell/scripts/
+nvim aliases.nu
+cdf .
+git branch | grep 'sync' | xargs git branch -D
+cd -
+nvim git.nu
+exit
+cd .config/nushell/scripts/
+nvim .
+exit
+cd .config/nushell/scripts/
+nvim config.nu
+cd ..
+nvim config.nu
+clear
+exit
+cdf .
+git co syncccc
+git co -b synccc
+gdb sync
+git co -
+gdb sync
+exit
+z
+nix-collect-garbage -d
+sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+sudo nix-store --gc
+cd .config/nushell/scripts/
+nvim aliases.nu
+exit
+cd .config/nushell/scripts/
+nvim aliases.nu
+exit
+cd .config/nushell
+nvim config.nu
+cd scripts/
+nvim .
+exit
+cleangen
+cd .config/nushell
+nvim config.nu
+exit
+cleangen
+sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
+cd .config/nushell/scripts/
+nvim nix.nu
+cd .config/nushell/scripts/
+nvim nix.nu
+exit
+exit
+nixls
+clear
+cdf .
+git log --pretty=%h»¦«%s»¦«%aN»¦«%aE»¦«%aD -n 5 | lines | split column "»¦«" commit subject name email date | upsert date {|d| $d.date | into datetime}
+cd .config/nushell/scripts/
+nvim git.nu
+exit
+exit
+cdf .
+gl
+gl 10
+clear
+gl 5
+gl 5 | commit
+gl 5 | to json
+gl 5 | get commit
+gl 5
+clear
+exit
+cd .config/rofi/
+ls
+nvim config.rasi
+exit
+tmux
+ls -a
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild --help
+sudo nixos-rebuild --switch
+sudo nixos-rebuild --help
+sudo nixos-rebuild switch
+clear
+zellij
+cd .config/nushell/scripts/
+ls
+nvim aliases.nu
+rm aliases.nu
+cd ..
+nvim config.nu
+exit
+tmux
+tmux --help
+tmux -c
+exit
+exit
+ovpn
+exi
+exit
+tmux
+cd .config/nushell/scripts/
+ls
+nvim aliases.nu
+openvpn --help
+nvim aliases.nu
+exit
+t
+ovpn
+cd .config/nushell/scripts/
+cd ..
+nvim config.nu
+exit
+tmux
+exit
+ovpn
+exit
+tmux
+clear
+cd .config/nushell/scripts/
+nvim flik.nu
+exit
+tmux
+nvim flik.nu
+loadenv checkout
+echo "hello"
+nvim flik.nu
+clear
+exit
+nvim flik.nu
+exit
+exit
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+loadenv checkout
+nvim flik.nu
+exit
+exit
+loadenv checkout
+$env.CHECKOUTPAGE_DOMAIN
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+loadenv checkout
+nvim flik.nu
+exit
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+nvim flik.nu
+exit
+nvim flik.nu
+exit
+loadenv checkout
+$env.PORT?
+nvim flik.nu
+exit
+loadenv checkout
+$env.PORT?
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+nvim flik.nu
+exit
+loadenv checkout
+cd
+starship
+starship prompt
+cd ..
+nvim env.nu
+cd
+find starship
+cd -
+nvim env.nu
+exi
+exit
+exit
+nvim env.nu
+cdf .
+cd -
+exit
+cdf .
+cd -
+loadenv checkout
+cd scripts/
+nvim flik.nu
+exit
+loadenv checkout
+cd
+loadenv checkout
+nvim env.nu
+exit
+nvim .tmux.conf
+exit
+tmux
+exit
+exit
+loadenv checkout
+$env.SHIPPINGSERVICEURL = https://api.dev.useflik.com/shipping<\n>$env.PROMOSERVICEURL = https://api.dev.useflik.com/promo<\n>$env.PUBSUB_PROJECT_ID = flik-dev<\n>$env.VA_EXPIRY_MINUTE = 15<\n>$env.QR_EXPIRY_MINUTE = 1<\n>$env.CHARGE_QR_CALLBACK_URL = https://api.dev.useflik.com/notification/cb/qr/charge/xendit/payment<\n>$env.DBURI_TRANSLATION = mongodb+srv://flikshopify:sjVPR0pGMgnt5GGI@shopify-app-dev.b62i3er.mongodb.net<\n>$env.DBNAME_TRANSLATION = test<\n>$env.CHECKOUTPAGE_DOMAIN = https://checkout.dev.useflik.com
+$env.VA_EXPIRY_MINUTE
+loadenv checkout
+$env.VA_EXPIRY_MINUTE
+exit
+tmux
+clear
+cdf .
+cdf checkout
+loadenv checkout
+cd
+cd .config/nushell/scripts/
+nvim flik.nu
+loadenv checkout
+$env.PORT
+exit
+loadenv checkout
+$env.PORT
+exit
+loadenv checkout
+exit
+loadenv checkout
+$env.PORT
+exit
+loadenv checkout
+$env.PORT
+exit
+loadenv checkout
+$env.PORT = 6969
+$env.PORT
+exit
+loadenv checkout
+exit
+loadenv checkout
+exit
+exec $env.PORT = 6969
+nu $env.PORT = 6969
+$env.PORT = 6969
+exit
+nvim flik.nu
+loadenv checkout
+exit
+loadenv checkout
+exit
+loadenv checkout
+exit
+loadenv checkout
+exit
+loadenv checkout
+exit
+loadenv checkout
+flikenv checkout
+cd ..
+nvim config.nu
+exit
+cd scripts/
+flikenv checkout
+$env.PORT
+exit
+loadenv checkout
+exit
+loadenv checkout
+loadenv checkout | from toml | load-env
+exit
+loadenv checkout
+exit
+flikenv checkout
+cdf checkout
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+loadenv checkout
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+cdf checkout
+nvim config/.env.development
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+loadenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+tmux
+tmux-attach
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+exit
+flikenv checkout
+$env.PORT
+exit
+nvim flik.nu
+eixt
+exit
+tmux attach
+exit
+clear
+loadenv reward
+flikenv reward
+$env.PORT
+exit
+$env.PORT
+exit
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+cleangen
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+cleangen
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+helvum
+exit
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+exit
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+helvum
+exit
+sudo nvim /etc/nixos/configuration.nix
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+cleangen
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+exit
+sudo pkill firefox
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+nvim todo
+exit
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+nvim todo
+sudo nvim /etc/nixos/configuration.nix
+exit
+sudo nixos-rebuild switch
+cleangen
+cdf checkout
+git st
+nvim .
+cd ../payment/
+nvim .
+cd ../checkout/
+nvim .
+cd
+cd go/bin/
+ls
+cd
+cdf checkout
+nvim .
+cd
+cd go/bin/
+ls
+./gopls
+gopls
+cd pkg
+ls
+cd ..
+cd
+ls
+ls -a
+rm -rf .3T
+mv todo audio
+ls
+./go/bin/gopls
+go install golang.org/x/tools/gopls@latest
+go verion
+go version
+go env GOPATH
+cd go/bin/
+ls
+cd ..
+ls
+cd pkg
+ls
+cd ..
+go env GOBIN
+go env GOPATH
+go env GOROOT
+nvim .
+cd ..
+cd .github/workflows
+nvim .
+cdf .
+cd payment
+nvim .
+go fmt ./...
+go test ./...
+cd ..
+git st
+git diff
+git ac -m "feat: FCNF-3352 send whatsapp reminder"
+git po feat/FCNF-3277
+clear
+exit
+git st
+nvim .
+git br
+git co feat/FCNF-3170
+ls
+cd reward
+gl 20
+gl 30
+gl 30 | get commit, name
+gl 30 | get commit name
+gl 30
+git co develop
+git pull
+git co master
+git pull
+gdb develop
+git co develop
+git co -b sync/dev/FCNF-3170
+git cp 6e391926
+nvim .
+cd ..
+nvim .
+cd reward
+git ac
+git cp --continue
+git cp 9573ecfe
+nvim .
+git ac
+git ac --continue
+git cp --continue
+nvim .
+git cherry-pick --continue
+git ac
+nvim .
+git cherry-pick --skip
+git cp 6c7cb27c
+nvim .
+git cherry-pick --skip
+git cp 6349b367
+nvim .
+git cp --skip
+git cp f66feb38
+nvim .
+git cp --abort
+git co develop
+gdb sync
+exit
+cler
+clear
+cd
+cd projects
+ls
+cd learn-zig/
+ls
+cd ..
+rm -rf learn-zig/
+rm monaspace/
+rm -rf monaspace/
+ls
+cd flik-backend/
+nvim .
+git st
+git br
+git co feat/FCNF-3277
+gl
+nvim .
+cd checkout/
+go fmt ./...
+go test ./...
+cd .
+nvim .
+nvim .
+git st
+git diff
+git restore .
+exit
+cd
+cd Downloads/
+ls
+ls *csv
+cd ../reward
+nvim .
+exit
+nvim `Link Creation List - Format - Format.csv`
+nvim .
+exit
+cd
+cd Downloads/
+cd postman-agent-0.4.20-linux-x64/
+ls
+cd `Postman Agent/`
+ls
+chmod +x `Postman Agent`
+`Postman Agent`
+`./Postman Agent`
+cd app
+ls
+chmod +x postman-agent
+chmod +x `Postman Agent`
+`Postman Agent`
+postman-agent
+./postman-agent
+exit
+make run
+ovpn
+cd ../..
+cd ..
+mkdir projects-bak
+cp -r projects/* projects-bak/
+exit
+exit
+tmux
+cleangen
+cd .config
+ls
+cd ..
+cp .config/kitty projects-bak/dotfiles
+cp -r .config/kitty projects-bak/dotfiles
+cp -r .config/nushell projects/dotfiles/
+rm -rf projects-bak
+cp -r .config/kitty projects/dotfiles
+cp -r .config/rofi projects/dotfiles
+cp -r .config/sway projects/dotfiles
+cp -r .config/waybar projects/dotfiles
+cd projects/dotfiles
+ls
+git st
+gl
+git ac -m "Update 20240129"
+git po main
+mkdir bak
+cp projects/flik-backend/reward/config/.env.development bak/.env.development.reward
+cp projects/flik-backend/checkout/config/.env.development bak/.env.development.checkout
+cp projects/flik-backend/payment/config/.env.development bak/.env.development.payment
+cp projects/flik-backend/shopper/config/.env.development bak/.env.development.shopper
+cd projects/reward
+cd projects/flik-backend/reward/
+nvim config/.env.development
+exit
+cd projects/second-brain/
+ls
+nvim .gitignore
+rm .gitignore
+git ac -m "Remove .gitignore"
+git po main
+exit
+cleangen
+cd .config/nushell/scripts/
+nvim .
+nixls
+cleangen
+nvim .config/nushell/scripts/
+cd -
+nvim .
+cd .config/nushell/scripts/
+nvim .
+nix-collect-garbage -d
+nixos-rebuild boot
+sudo nixos-rebuild boot
+cd .config/nushell/scripts/
+nvim .
+exit
+sudo nvim /etc/nixos/configuration.nix
+clear
+sudo nixos-rebuild switch
+clean
+clear
+gparted
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+cleangen
+nvim .config/nushell/scripts/
+clear
+parted
+sudo parted
+sudo nvim /etc/nixos/configuration.nix
+sudo nixos-rebuild switch
+cd .config/nushell/scripts/
+nvim .
+cd ..
+cd
+cd projects/second-brain/
+git pull
+cd
+cd .config/nushell/scripts/
+nvim .
+cd
+cd projects
+git clone git@github.com:adibfarrasy/one-percent-srv.git
+ls
+cd dotfiles/
+git pull
+git pull --rebase
+cp -r nvim .config
+cdc nvim
+exit
+cdc nvim
+nvim .config/nushell/scripts/
+cdc
+cd .config/nushell
+nvim .
+exit
+cdc nvim
+nvim .
+cd ..
+ls
+exit
+exit
+tmux
+cd
+sudo nvim /etc/nixos/configuration.nix
+clear
+cd projects/dotfiles/
+nvim .
+ls
+ls -a
+rm -rf .config
+cp -r nvim /home/adibf/.config
+cdc nvim
+nvim .
+cdc
+cdf
+cd ../nushell
+nvim .
+exit
+cdf
+cd .config/nushell
+nvim .
+exit
+cdf
+cd .config/nushell
+nvim .
+exit
+cdf
+cd
+cd .config/nushell
+nvim .
+exti
+exit
+cdc
+cdc nvim
+cd
+cd projects/flik-backend/
+git co master
+git stash
+git pull
+git co master
+git pull
+gdb feat
+git br
+gdb fix
+clear
+git co develop
+git pull
+cdc waybar
+nvim .
+cdc sway
+nvim .
+cdc waybar
+nvim .
+cdc waybar
+exit
+cdc waybar
+ovpn
+exit
+cdc waybar
+nvim .
+cdc waybar
+nvim .
+pmn
+clear
+cd projects
+cdc nushell
+nvim .
+exit
+cdp
+git clone git@github.com:adibfarrasy/one-percent-app.git
+clear
+cdc sway
+nvim .
+clear
+cdc sway
+nvim .
+cdc sway
+nvim .
+rm ~/.local/state/nvim/swap//%home%adibf%.config%sway%config.swp
+cdc sway
+nvim .
+rm ~/.local/state/nvim/swap//%home%adibf%.config%sway%config.swp
+nvim .
+cdc sway
+exit
+cdc sway
+exit
+man 5 sway
+cdc sway
+nvim .
+cdc sway
+nvim .
+cdc sway
+exit
+cdc sway
+nvim .
+exit
+cdc sway
+clear
+nvim .
+cp /home/adibf/Downloads/Kanna_Kamui_Finds_RUST_programming.jpg
+cp /home/adibf/Downloads/Kanna_Kamui_Finds_RUST_programming.jpg .
+ls
+cp Kanna_Kamui_Finds_RUST_programming.jpg wallpapers/
+ls
+rm Kanna_Kamui_Finds_RUST_programming.jpg
+ls wallpapers
+nvim .
+cdc sway
+nvim .
+cdp
+ls
+sudo nvim /etc/nixos/configuration.nix
+clear
+cdf
+ls
+cd order
+nvim .
+cd ..
+cdf report
+nvim .
+cdf order
+nvim .
+cd services/cart
+cd service/cart
+mockery --name=Service
+go install github.com/vektra/mockery/v2@v2.42.1
+mockery --name=Service
+nvim .
+mockery --name=Service
+nvim .
+mockery --name=Service
+nvim .
+cd ../..
+nvim.
+nvim .
+cd service/cart
+mockery --name=Service
+mockery --name=Repository
+clear
+exit
+cdf report
+nvim .
+go fmt ./...
+go test ./...
+go get github.com/samber/lo
+go test ./...
+nvim .
+go test ./...
+nvim .
+cd service/customer_report/
+mockery --name=CartRepo
+cd ../..
+nvim .
+go test ./...
+nvim .
+go test ./...
+nvim .
+go test ./...
+nvim config/.env.development
+nvim .
+git diff
+git diff .
+nvim config/.env.development
+git st
+nvim .
+go test ./...
+go fmt ./...
+git stash
+git co -
+git co feat/FCNF-3905
+git co -b feat/FCNF-3905
+git stash pop
+git diff
+git ac -m "feat:FCNF-3905 add field in customer list excel report"
+git po feat/FCNF-3905
+gl
+git co develop
+git pull
+git cp 79bdde8f
+git po develop
+exit
+exit
+clear
+gl
+exit
+cd
+sudo nvim /etc/nixos/configuration.nix
+clear
+cdc kitty
+nvim .
+exit
+tmux
+exit
+nvim .
+cdc kitty
+nvim .
+exit
+clear
+cp .config/kitty projects-bak/dotfiles
+cp -r .config/kitty projects-bak/dotfiles
+cp -r .config/nushell projects/dotfiles/
+cd projects/dotfiles/
+nvim .
+git st
+ls
+git st
+nvim kitty
+cd
+cp -r .config/kitty projects-bak/dotfiles
+cp -r .config/kitty projects-bak/dotfiles/
+ls
+cp -r .config/kitty projects/dotfiles

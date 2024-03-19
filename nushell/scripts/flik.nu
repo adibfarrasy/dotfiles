@@ -1,5 +1,8 @@
-def --env cdf [svc: string] {
-    cd $"/home/adibf/projects/flik-backend/($svc)"
+def --env cdf [svc?: string] {
+    let sv = if svc == null {
+        ""
+    } else $svc
+    cd $"/home/adibf/projects/flik-backend/($sv)"
 }
 
 def --env flikenv [svc: string] {

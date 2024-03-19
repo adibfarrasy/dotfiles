@@ -766,3 +766,4 @@ source /home/adibf/.config/nushell/scripts/flik.nu
 source /home/adibf/.config/nushell/scripts/git.nu
 source /home/adibf/.config/nushell/scripts/nix.nu
 source /home/adibf/.config/nushell/scripts/aliases.nu
+source /home/adibf/.config/nushell/scripts/cd.nu
