@@ -153,7 +153,7 @@ vim.opt.scrolloff = 10
 
 -- Fold code behavior
 vim.opt.foldmethod = 'indent'
-vim.opt.foldenable = true
+vim.opt.foldenable = false
 vim.opt.foldnestmax = 10
 vim.opt.foldlevel = 3
 vim.opt.tabstop = 4
@@ -166,12 +166,14 @@ vim.opt.colorcolumn = { '+1' }
 vim.opt.textwidth = 80
 vim.opt.wrap = false
 
+vim.o.background = 'light'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<CR>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -189,6 +191,12 @@ vim.keymap.set('v', '<S-TAB>', '<gv', { noremap = true })
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { noremap = true })
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { noremap = true })
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
+
+-- Better window resize
+vim.keymap.set('n', '<M-h>', '<C-w>5<', { noremap = true })
+vim.keymap.set('n', '<M-l>', '<C-w>5>', { noremap = true })
+vim.keymap.set('n', '<M-k>', '<C-w>+', { noremap = true })
+vim.keymap.set('n', '<M-j>', '<C-w>-', { noremap = true })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -249,7 +257,7 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  -- 'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -279,6 +287,66 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+    config = function()
+      require('gitsigns').setup {
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then
+              return ']c'
+            end
+            vim.schedule(function()
+              gs.next_hunk()
+            end)
+            return '<Ignore>'
+          end, { expr = true })
+
+          map('n', '[c', function()
+            if vim.wo.diff then
+              return '[c'
+            end
+            vim.schedule(function()
+              gs.prev_hunk()
+            end)
+            return '<Ignore>'
+          end, { expr = true })
+
+          -- Actions
+          -- map('n', '<leader>hs', gs.stage_hunk)
+          -- map('n', '<leader>hr', gs.reset_hunk)
+          -- map('v', '<leader>hs', function()
+          --   gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          -- end)
+          -- map('v', '<leader>hr', function()
+          --   gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          -- end)
+          -- map('n', '<leader>hS', gs.stage_buffer)
+          -- map('n', '<leader>hu', gs.undo_stage_hunk)
+          -- map('n', '<leader>hR', gs.reset_buffer)
+          map('n', '<leader>hp', gs.preview_hunk)
+          map('n', '<leader>hb', function()
+            gs.blame_line { full = true }
+          end)
+          -- map('n', '<leader>tb', gs.toggle_current_line_blame)
+          map('n', '<leader>hd', gs.diffthis)
+          map('n', '<leader>hD', function()
+            gs.diffthis '~'
+          end)
+          -- map('n', '<leader>td', gs.toggle_deleted)
+
+          -- Text object
+          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end,
+      }
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run lua code when they are loaded.
@@ -565,9 +633,15 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {
           completeUnimported = true,
-          usePlaceholders = true,
+          usePlaceholders = false,
           analyses = {
             unusedparams = true,
+          },
+          buildFlags = { '-tags=integration' },
+          gofumpt = true,
+          ['local'] = '<repo>',
+          init_options = {
+            buildFlags = { '-tags=integration' },
           },
         },
         -- pyright = {},
@@ -594,6 +668,17 @@ require('lazy').setup({
               -- diagnostics = { disable = { 'missing-fields' } },
             },
           },
+        },
+        templ = {},
+        html = {
+          filetypes = { 'html', 'templ' },
+        },
+        htmx = {
+          filetypes = { 'html', 'templ' },
+        },
+        tailwindcss = {
+          filetypes = { 'templ', 'astro', 'javascript', 'typescript', 'react' },
+          init_options = { userLanguages = { templ = 'html' } },
         },
       }
 
@@ -627,6 +712,7 @@ require('lazy').setup({
       }
 
       vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
+      vim.filetype.add { extension = { templ = 'templ' } }
     end,
   },
 
@@ -847,6 +933,9 @@ require('lazy').setup({
         view = {
           width = 45,
         },
+        git = {
+          ignore = false,
+        },
       }
 
       vim.keymap.set('n', '<leader>t', '<cmd>NvimTreeToggle<cr>', {})
@@ -870,69 +959,32 @@ require('lazy').setup({
 
   { 'akinsho/git-conflict.nvim', version = '*', config = true },
 
+  'NoahTheDuke/vim-just',
+  'gleam-lang/gleam.vim',
+  -- TODO: remove this after testing
   {
-    'lewis6991/gitsigns.nvim',
+    dir = '/home/adibf/Documents/simpanan.nvim/',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+    },
+    build = 'make -C simpanan',
     config = function()
-      require('gitsigns').setup {
-        on_attach = function(bufnr)
-          local gs = package.loaded.gitsigns
-
-          local function map(mode, l, r, opts)
-            opts = opts or {}
-            opts.buffer = bufnr
-            vim.keymap.set(mode, l, r, opts)
-          end
-
-          -- Navigation
-          map('n', ']c', function()
-            if vim.wo.diff then
-              return ']c'
-            end
-            vim.schedule(function()
-              gs.next_hunk()
-            end)
-            return '<Ignore>'
-          end, { expr = true })
-
-          map('n', '[c', function()
-            if vim.wo.diff then
-              return '[c'
-            end
-            vim.schedule(function()
-              gs.prev_hunk()
-            end)
-            return '<Ignore>'
-          end, { expr = true })
-
-          -- Actions
-          -- map('n', '<leader>hs', gs.stage_hunk)
-          -- map('n', '<leader>hr', gs.reset_hunk)
-          -- map('v', '<leader>hs', function()
-          --   gs.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-          -- end)
-          -- map('v', '<leader>hr', function()
-          --   gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-          -- end)
-          -- map('n', '<leader>hS', gs.stage_buffer)
-          -- map('n', '<leader>hu', gs.undo_stage_hunk)
-          -- map('n', '<leader>hR', gs.reset_buffer)
-          map('n', '<leader>hp', gs.preview_hunk)
-          map('n', '<leader>hb', function()
-            gs.blame_line { full = true }
-          end)
-          map('n', '<leader>tb', gs.toggle_current_line_blame)
-          map('n', '<leader>hd', gs.diffthis)
-          map('n', '<leader>hD', function()
-            gs.diffthis '~'
-          end)
-          map('n', '<leader>td', gs.toggle_deleted)
-
-          -- Text object
-          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
-        end,
-      }
+      vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
+      vim.keymap.set('v', '<leader>se', require('simpanan').execute)
     end,
   },
+  -- {
+  --   'adibfarrasy/simpanan.nvim',
+  --   dependencies = {
+  --     'MunifTanjim/nui.nvim',
+  --   },
+  --   build = 'make -C simpanan',
+  --   config = function()
+  --     vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
+  --     vim.keymap.set('v', '<leader>se', require('simpanan').execute)
+  --   end,
+  -- },
+
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- put them in the right spots if you want.
@@ -972,6 +1024,8 @@ require('lazy').setup({
     },
   },
 })
+
+vim.g.border_chars = { '┌', '─', '┐', '│', '┘', '─', '└', '│' }
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
