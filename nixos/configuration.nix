@@ -16,7 +16,7 @@ let
   };
 
   configure-gtk = pkgs.writeTextFile {
-    name = "configure-gtk";
+  name = "configure-gtk";
     destination = "/bin/configure-gtk";
     executable = true;
     text = let
@@ -79,18 +79,41 @@ in
   users.users.adibf = {
     isNormalUser = true;
     description = "adibf";
-    extraGroups = [ "networkmanager" "wheel" "video" "audio" "docker"];
+    extraGroups = [ "networkmanager" "wheel" "video" "audio" "docker" ];
     shell = pkgs.nushell;
+    # shell = pkgs.zsh;
     packages = with pkgs; [];
   };
 
-  # Enable automatic login for the user.
-  services.getty.autologinUser = "adibf";
 
-  nixpkgs.config = {
-    allowUnfree = true;
-    permittedInsecurePackages = [
-      "electron-25.9.0"
+  # home-manager.users.adibf = { pkgs, ... }: {
+  #   home.packages = [];
+  #
+  #   # The state version is required and should stay at the version you
+  #   # originally installed.
+  #   home.stateVersion = "24.05";
+  # };
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      permittedInsecurePackages = [
+        "electron-25.9.0"
+      ];
+      android_sdk.accept_license = true;
+    };
+    overlays = [
+      (final: prev: {
+        postman = prev.postman.overrideAttrs(old: rec {
+          version = "20230716100528";
+          src = final.fetchurl {
+            url = "https://web.archive.org/web/${version}/https://dl.pstmn.io/download/latest/linux_64";
+            sha256 = "sha256-svk60K4pZh0qRdx9+5OUTu0xgGXMhqvQTGTcmqBOMq8=";
+  
+            name = "${old.pname}-${version}.tar.gz";
+          };
+        });
+      })
     ];
   };
 
@@ -99,12 +122,12 @@ in
   # applications
   environment.systemPackages = with pkgs; [
     # work
-    dbeaver
-    mongosh
     slack
-    # postman
-    redis
+    postman
     openvpn
+    go
+    gcc
+    gopls
     # sway
     dbus-sway-environment
     configure-gtk
@@ -145,6 +168,8 @@ in
     ranger
     gnumake
     nushell
+    zsh
+    vivid
     ripgrep
     starship
     lsof
@@ -160,10 +185,12 @@ in
     yarn
     parted
     chromium
-    # some Rust library dependencies
+    binutils
     cmake
     pkg-config-unwrapped
+    stdenv.cc.cc
     openssl
+    flutter
 ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -193,12 +220,15 @@ in
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.11"; # Did you read the comment?
 
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-  };
+  system.autoUpgrade.enable = true;
+  system.autoUpgrade.allowReboot = true;
 
   security.rtkit.enable = true;
+
+  services.getty.autologinUser = "adibf";
+
+  services.locate.enable = true;
+
   services.pipewire = {
     enable = true;
     pulse.enable = false;
@@ -212,23 +242,12 @@ in
     wlr.enable = true;
   };
 
-  programs.sway = {
-    enable = true;
-    wrapperFeatures.gtk = true;
-  };
-
   systemd.user.services.kanshi = {
     description = "kanshi daemon";
     serviceConfig = {
       Type = "simple";
       ExecStart = ''${pkgs.kanshi}/bin/kanshi -c kanshi_config_file'';
     };
-  };
-
-  programs.light.enable = true;
-
-  programs.waybar = {
-    enable = true;
   };
 
   fonts = {
@@ -278,25 +297,60 @@ load-module module-switch-on-connect
   
   virtualisation.docker.enable = true;
 
-  programs.starship = {
-    enable = true;
-    settings = {
-         add_newline = false;
-         character = {
-           success_symbol = "[➜](bold green)";
-           error_symbol = "[➜](bold red)";
-         };
-         package.disabled = true;
-	 format = "$all";
+  environment = {
+    sessionVariables = with pkgs; rec {
+      XDG_CACHE_HOME  = "$HOME/.cache";
+      XDG_CONFIG_HOME = "$HOME/.config";
+      XDG_DATA_HOME   = "$HOME/.local/share";
+      XDG_STATE_HOME  = "$HOME/.local/state";
+
+      # NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
+      #   stdenv.cc.cc
+      #   openssl
+      #   # ...
+      # ];
+      # NIX_LD = lib.mkForce(builtins.readFile "${stdenv.cc}/nix-support/dynamic-linker");
     };
   };
 
-  environment.sessionVariables = rec {
-    XDG_CACHE_HOME  = "$HOME/.cache";
-    XDG_CONFIG_HOME = "$HOME/.config";
-    XDG_DATA_HOME   = "$HOME/.local/share";
-    XDG_STATE_HOME  = "$HOME/.local/state";
-  };
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  services.locate.enable = true;
+  programs = {
+    starship = {
+        enable = true;
+        settings = {
+             add_newline = false;
+             character = {
+               success_symbol = "[➜](bold green)";
+               error_symbol = "[➜](bold red)";
+             };
+             package.disabled = true;
+         format = "$all";
+        };
+    };
+
+    neovim = {
+        enable = true;
+        defaultEditor = true;
+    };
+
+    sway = {
+        enable = true;
+        wrapperFeatures.gtk = true;
+    };
+
+    light.enable = true;
+
+    waybar.enable = true;
+
+    zsh.enable = true;
+    
+    nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+          # Add any missing dynamic libraries for unpackaged programs
+          # here, NOT in environment.systemPackages
+      ];
+    };
+  };
 }
