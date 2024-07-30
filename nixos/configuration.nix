@@ -80,19 +80,13 @@ in
     isNormalUser = true;
     description = "adibf";
     extraGroups = [ "networkmanager" "wheel" "video" "audio" "docker" ];
-    shell = pkgs.nushell;
-    # shell = pkgs.zsh;
+    # shell = pkgs.nushell;
+    shell = pkgs.zsh;
     packages = with pkgs; [];
   };
 
+  users.extraGroups.vboxusers.members = [ "adibf" ];
 
-  # home-manager.users.adibf = { pkgs, ... }: {
-  #   home.packages = [];
-  #
-  #   # The state version is required and should stay at the version you
-  #   # originally installed.
-  #   home.stateVersion = "24.05";
-  # };
 
   nixpkgs = {
     config = {
@@ -127,7 +121,11 @@ in
     openvpn
     go
     gcc
+    glibc
     gopls
+    dbeaver-bin
+    zoxide
+    opentofu
     # sway
     dbus-sway-environment
     configure-gtk
@@ -135,7 +133,7 @@ in
     xdg-utils
     glib
     dracula-theme
-    gnome3.adwaita-icon-theme
+    adwaita-icon-theme
     swaylock
     swayidle
     grim
@@ -169,13 +167,15 @@ in
     gnumake
     nushell
     zsh
+    zsh-autosuggestions
+    zsh-syntax-highlighting
     vivid
     ripgrep
     starship
     lsof
     obsidian
     git
-    gnome.nautilus
+    nautilus
     qbittorrent
     zig
     zls
@@ -184,13 +184,19 @@ in
     ffmpeg
     yarn
     parted
-    chromium
+    google-chrome
     binutils
     cmake
     pkg-config-unwrapped
     stdenv.cc.cc
     openssl
     flutter
+    ollama
+    godot_4 
+    gparted
+    # devops
+    qemu
+    bridge-utils
 ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -224,6 +230,7 @@ in
   system.autoUpgrade.allowReboot = true;
 
   security.rtkit.enable = true;
+  security.polkit.enable = true;
 
   services.getty.autologinUser = "adibf";
 
@@ -234,12 +241,28 @@ in
     pulse.enable = false;
     alsa.enable = true;
     alsa.support32Bit = true;
+    wireplumber.enable = true;
+  };
+
+  services.openssh = {
+    enable = true;
+    ports = [ 22 ];
+    settings = {
+      PasswordAuthentication = true;
+      UseDns = true;
+      X11Forwarding = false;
+      PermitRootLogin = "prohibit-password"; # "yes", "without-password", "prohibit-password", "forced-commands-only", "no"
+    };
   };
 
   services.dbus.enable = true;
+  # xdg.portal = {
+  #   enable = true;
+  #   wlr.enable = true;
+  # };
   xdg.portal = {
     enable = true;
-    wlr.enable = true;
+    extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
   };
 
   systemd.user.services.kanshi = {
@@ -293,9 +316,10 @@ load-module module-switch-on-connect
     };
   };
 
-  sound.enable = false;
-  
-  virtualisation.docker.enable = true;
+  virtualisation = {
+    docker.enable = true;
+  };
+
 
   environment = {
     sessionVariables = with pkgs; rec {
@@ -343,7 +367,9 @@ load-module module-switch-on-connect
 
     waybar.enable = true;
 
-    zsh.enable = true;
+    zsh = {
+      enable = true;
+    };
     
     nix-ld = {
       enable = true;

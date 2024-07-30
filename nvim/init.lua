@@ -166,7 +166,7 @@ vim.opt.colorcolumn = { '+1' }
 vim.opt.textwidth = 80
 vim.opt.wrap = false
 
-vim.o.background = 'light'
+vim.o.background = 'dark'
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -232,6 +232,26 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'terraform', 'yaml', 'nix' },
+  callback = function()
+    vim.bo.shiftwidth = 2
+    vim.bo.tabstop = 2
+  end,
+})
+
+vim.api.nvim_create_augroup('TerraformAutoCmds', { clear = true })
+vim.api.nvim_create_autocmd('BufWritePost', {
+  group = 'TerraformAutoCmds',
+  pattern = { '*.tf' },
+  callback = function()
+    local file_dir = vim.fn.expand '%:p:h'
+    local command = 'cd ' .. file_dir .. ' && tofu fmt'
+    vim.fn.system(command)
+    vim.cmd 'edit'
   end,
 })
 
@@ -438,12 +458,16 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          -- mappings = {
+          --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          -- },
+        },
+        pickers = {
+          live_grep = {
+            previewer = true,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -644,8 +668,8 @@ require('lazy').setup({
             buildFlags = { '-tags=integration' },
           },
         },
-        -- pyright = {},
-        -- rust_analyzer = {},
+        pyright = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -931,7 +955,7 @@ require('lazy').setup({
           show_on_open_dirs = true,
         },
         view = {
-          width = 45,
+          width = 30,
         },
         git = {
           ignore = false,
@@ -961,9 +985,8 @@ require('lazy').setup({
 
   'NoahTheDuke/vim-just',
   'gleam-lang/gleam.vim',
-  -- TODO: remove this after testing
   {
-    dir = '/home/adibf/Documents/simpanan.nvim/',
+    'adibfarrasy/simpanan.nvim',
     dependencies = {
       'MunifTanjim/nui.nvim',
     },
@@ -971,19 +994,12 @@ require('lazy').setup({
     config = function()
       vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
       vim.keymap.set('v', '<leader>se', require('simpanan').execute)
+      require('simpanan').setup {
+        max_row_limit = 20,
+        debug_mode = false,
+      }
     end,
   },
-  -- {
-  --   'adibfarrasy/simpanan.nvim',
-  --   dependencies = {
-  --     'MunifTanjim/nui.nvim',
-  --   },
-  --   build = 'make -C simpanan',
-  --   config = function()
-  --     vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
-  --     vim.keymap.set('v', '<leader>se', require('simpanan').execute)
-  --   end,
-  -- },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
