@@ -19,8 +19,14 @@ client.focused_inactive $title_outline_unfocused $background         $text_color
 client.unfocused        $title_outline_unfocused $title_bg_unfocused $text_unfoc   $title_outline_active
 client.urgent           $color_urgent            $color_urgent       $color_urgent $color_urgent         $color_urgent
 
+# No titlebars
+default_border none 
+
 # Remove title text
 for_window [app_id=".*"] title_format " "
+
+# Set font
+font pango:MartianMono 11
 
 ### Variables
 #
@@ -41,7 +47,7 @@ set $menu rofi -show drun
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg ./wallpapers/yin-yang.png fill
+output * bg ./wallpapers/gruvbox-dark-rainbow.png fill
 #
 # Example configuration:
 #
@@ -223,7 +229,7 @@ mode "resize" {
 }
 
 bindsym $mod+r mode "resize"
-bindsym $mod+x exec swaylock -u -f -i /home/adibf/.config/sway/wallpapers/yin-yang-bw.png -s fill
+bindsym $mod+x exec swaylock -u -f -i /home/adibf/.config/sway/wallpapers/gruvbox-light-rainbow.png -s fill
 bindsym $mod+b exec firefox
 gaps inner 6
 
