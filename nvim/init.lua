@@ -198,13 +198,16 @@ vim.keymap.set('n', '<M-l>', '<C-w>5>', { noremap = true })
 vim.keymap.set('n', '<M-k>', '<C-w>+', { noremap = true })
 vim.keymap.set('n', '<M-j>', '<C-w>-', { noremap = true })
 
+vim.keymap.set('n', '<leader>qf', vim.diagnostic.setqflist, { noremap = true })
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
 --
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+
+vim.keymap.set('n', '<leader>p', ':echo expand("%:p")<CR>', { noremap = true, silent = true })
 
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
@@ -236,7 +239,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = { 'terraform', 'yaml', 'nix' },
+  pattern = { 'terraform', 'nix', 'json', 'yaml' },
   callback = function()
     vim.bo.shiftwidth = 2
     vim.bo.tabstop = 2
@@ -244,14 +247,10 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 vim.api.nvim_create_augroup('TerraformAutoCmds', { clear = true })
-vim.api.nvim_create_autocmd('BufWritePost', {
-  group = 'TerraformAutoCmds',
-  pattern = { '*.tf' },
-  callback = function()
-    local file_dir = vim.fn.expand '%:p:h'
-    local command = 'cd ' .. file_dir .. ' && tofu fmt'
-    vim.fn.system(command)
-    vim.cmd 'edit'
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = '*',
+  callback = function(args)
+    require('conform').format { bufnr = args.buf }
   end,
 })
 
@@ -388,15 +387,18 @@ require('lazy').setup({
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+      local wk = require 'which-key'
+      wk.add {
+        { '<leader>c', group = '[C]ode' },
+        { '<leader>c_', hidden = true },
+        { '<leader>d', group = '[D]ocument' },
+        { '<leader>d_', hidden = true },
+        { '<leader>r', group = '[R]ename' },
+        { '<leader>r_', hidden = true },
+        { '<leader>s', group = '[S]earch' },
+        { '<leader>s_', hidden = true },
+        { '<leader>w', group = '[W]orkspace' },
+        { '<leader>w_', hidden = true },
       }
     end,
   },
@@ -668,16 +670,16 @@ require('lazy').setup({
             buildFlags = { '-tags=integration' },
           },
         },
+
         pyright = {},
+        mypy = {},
+        black = {},
+
         rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`tsserver`) will work just fine
-        -- tsserver = {},
-        --
+
+        ts_ls = {},
+        eslint = {},
+        prettierd = {},
 
         lua_ls = {
           -- cmd = {...},
@@ -752,10 +754,14 @@ require('lazy').setup({
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
+        python = { 'ruff_fmt' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        -- javascript = { { "prettierd", "prettier" } },
+        javascript = { 'prettierd' },
+        typescript = { 'prettierd' },
+
+        terraform = { 'tofu_fmt' },
       },
     },
   },
@@ -912,7 +918,19 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'html',
+        'lua',
+        'markdown',
+        'vim',
+        'vimdoc',
+        'lua',
+        'javascript',
+        'typescript',
+        'tsx',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = { enable = true },
@@ -963,14 +981,19 @@ require('lazy').setup({
       }
 
       vim.keymap.set('n', '<leader>t', '<cmd>NvimTreeToggle<cr>', {})
-      vim.keymap.set('n', '<leader>mn', require('nvim-tree.marks.navigation').next)
-      vim.keymap.set('n', '<leader>mp', require('nvim-tree.marks.navigation').prev)
-      vim.keymap.set('n', '<leader>ms', require('nvim-tree.marks.navigation').select)
     end,
   },
 
   --  Auto-pair brackets
   'jiangmiao/auto-pairs',
+
+  {
+    'windwp/nvim-ts-autotag',
+    ft = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+    config = function()
+      require('nvim-ts-autotag').setup()
+    end,
+  },
 
   --  Git helpers
   {
