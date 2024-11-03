@@ -29,6 +29,13 @@ let
     '';
   };
 
+  dbeaverPkgs = import (pkgs.fetchFromGitHub {
+      owner = "NixOS";
+      repo = "nixpkgs";
+      rev = "4d10225ee46c0ab16332a2450b493e0277d1741a";
+      sha256 = "sha256-bA2n89V9RhdTATbcNsw89bGBmAF0YfrVIMV+w2WpTB4=";
+    }) { };
+
 in
 
 {
@@ -118,14 +125,16 @@ in
     # work
     slack
     postman
-    openvpn
+    insomnia
+    openvpn3
     go
     gcc
     glibc
     gopls
-    dbeaver-bin
+    dbeaverPkgs.dbeaver-bin
     zoxide
     opentofu
+    yazi
     # sway
     dbus-sway-environment
     configure-gtk
@@ -152,7 +161,7 @@ in
     # others
     kitty
     neovim
-    firefox
+    (wrapFirefox (firefox-unwrapped.override { pipewireSupport = true;}) {})
     neofetch
     sumneko-lua-language-server
     libinput
@@ -175,7 +184,6 @@ in
     lsof
     obsidian
     git
-    nautilus
     qbittorrent
     zig
     zls
@@ -183,17 +191,16 @@ in
     unzip
     ffmpeg
     yarn
-    parted
     google-chrome
     binutils
     cmake
     pkg-config-unwrapped
     stdenv.cc.cc
     openssl
-    flutter
-    ollama
     godot_4 
     gparted
+    traceroute
+    android-studio
     # devops
     qemu
     bridge-utils
@@ -256,13 +263,12 @@ in
   };
 
   services.dbus.enable = true;
-  # xdg.portal = {
-  #   enable = true;
-  #   wlr.enable = true;
-  # };
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
+    extraPortals = with pkgs; [ 
+      xdg-desktop-portal-wlr 
+      xdg-desktop-portal-gtk
+    ];
   };
 
   systemd.user.services.kanshi = {
@@ -327,6 +333,7 @@ load-module module-switch-on-connect
       XDG_CONFIG_HOME = "$HOME/.config";
       XDG_DATA_HOME   = "$HOME/.local/share";
       XDG_STATE_HOME  = "$HOME/.local/state";
+      XDG_CURRENT_DESKTOP = "sway"; 
 
       # NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
       #   stdenv.cc.cc
@@ -378,5 +385,7 @@ load-module module-switch-on-connect
           # here, NOT in environment.systemPackages
       ];
     };
+
+    openvpn3.enable = true;
   };
 }

@@ -47,7 +47,7 @@ set $menu rofi -show drun
 ### Output configuration
 #
 # Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg ./wallpapers/gruvbox-dark-rainbow.png fill
+output * bg ./wallpapers/koi.png fill
 #
 # Example configuration:
 #
@@ -275,6 +275,6 @@ bindsym Mod1+Print exec grimshot save area
 # include ~/.config/sway/config.d/*.conf
 include /etc/sway/config.d/*
 exec /home/adibf/.bashrc
-exec waybar
+# exec waybar
 
 exec sleep 5; systemctl --user start kanshi.service

@@ -199,6 +199,7 @@ vim.keymap.set('n', '<M-k>', '<C-w>+', { noremap = true })
 vim.keymap.set('n', '<M-j>', '<C-w>-', { noremap = true })
 
 vim.keymap.set('n', '<leader>qf', vim.diagnostic.setqflist, { noremap = true })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -673,12 +674,12 @@ require('lazy').setup({
 
         pyright = {},
         mypy = {},
-        black = {},
 
         rust_analyzer = {},
 
         ts_ls = {},
         eslint = {},
+        prettier = {},
         prettierd = {},
 
         lua_ls = {
@@ -758,8 +759,10 @@ require('lazy').setup({
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
-        javascript = { 'prettierd' },
-        typescript = { 'prettierd' },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
 
         terraform = { 'tofu_fmt' },
       },
