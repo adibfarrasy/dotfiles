@@ -1,0 +1,17 @@
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
+[user]
+	name = Adib Farrasy
+	email = adibfarrasy@gmail.com
+[url "git@github.com:useflik"]
+	insteadOf = https://github.com/useflik
+[alias]
+    st = status
+    ac = !git add . && git commit
+    co = checkout 
+    po = push origin
+    br = branch
+    rc = rebase --continue
+    cp = cherry-pick
+[core]
+	editor = nvim
