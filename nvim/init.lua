@@ -700,13 +700,11 @@ require('lazy').setup({
         html = {
           filetypes = { 'html', 'templ' },
         },
-        htmx = {
-          filetypes = { 'html', 'templ' },
-        },
         tailwindcss = {
           filetypes = { 'templ', 'astro', 'javascript', 'typescript', 'react' },
           init_options = { userLanguages = { templ = 'html' } },
         },
+        jdtls = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -1011,21 +1009,21 @@ require('lazy').setup({
 
   'NoahTheDuke/vim-just',
   'gleam-lang/gleam.vim',
-  {
-    'adibfarrasy/simpanan.nvim',
-    dependencies = {
-      'MunifTanjim/nui.nvim',
-    },
-    build = 'make -C simpanan',
-    config = function()
-      vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
-      vim.keymap.set('v', '<leader>se', require('simpanan').execute)
-      require('simpanan').setup {
-        max_row_limit = 20,
-        debug_mode = false,
-      }
-    end,
-  },
+  -- {
+  --   'adibfarrasy/simpanan.nvim',
+  --   dependencies = {
+  --     'MunifTanjim/nui.nvim',
+  --   },
+  --   build = 'make -C simpanan',
+  --   config = function()
+  --     vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
+  --     vim.keymap.set('v', '<leader>se', require('simpanan').execute)
+  --     require('simpanan').setup {
+  --       max_row_limit = 20,
+  --       debug_mode = false,
+  --     }
+  --   end,
+  -- },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
