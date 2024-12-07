@@ -198,7 +198,34 @@ vim.keymap.set('n', '<M-l>', '<C-w>5>', { noremap = true })
 vim.keymap.set('n', '<M-k>', '<C-w>+', { noremap = true })
 vim.keymap.set('n', '<M-j>', '<C-w>-', { noremap = true })
 
+-- Custom
 vim.keymap.set('n', '<leader>qf', vim.diagnostic.setqflist, { noremap = true })
+
+local terminal_win = nil
+local terminal_buf = nil
+local toggle_terminal = function()
+  if terminal_win and vim.api.nvim_win_is_valid(terminal_win) then
+    vim.api.nvim_win_close(terminal_win, true)
+    terminal_win = nil
+    if terminal_buf and vim.api.nvim_buf_is_valid(terminal_buf) then
+      vim.api.nvim_buf_delete(terminal_buf, { force = true })
+      terminal_buf = nil
+    end
+  else
+    -- Open terminal in a horizontal split
+    vim.cmd 'split'
+    vim.cmd 'terminal'
+    terminal_win = vim.api.nvim_get_current_win()
+    terminal_buf = vim.api.nvim_get_current_buf()
+    vim.cmd 'startinsert' -- Enter insert mode automatically
+  end
+end
+
+vim.keymap.set({ 'n', 't' }, '<C-_>', '', {
+  noremap = true,
+  silent = true,
+  callback = toggle_terminal,
+})
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -1094,6 +1121,8 @@ require('lazy').setup({
           current = 'Visual',
         },
       }
+
+      vim.keymap.set('n', '<leader>cq', '<cmd>GitConflictListQf<CR>')
     end,
   },
 
@@ -1221,13 +1250,6 @@ require('lazy').setup({
         end,
         desc = 'Delete Buffer',
       },
-      -- {
-      --   '<leader>cR',
-      --   function()
-      --     Snacks.rename.rename_file()
-      --   end,
-      --   desc = 'Rename File',
-      -- },
       {
         '<leader>gB',
         function()
@@ -1269,54 +1291,6 @@ require('lazy').setup({
           Snacks.notifier.hide()
         end,
         desc = 'Dismiss All Notifications',
-      },
-      {
-        '<c-/>',
-        function()
-          Snacks.terminal()
-        end,
-        desc = 'Toggle Terminal',
-      },
-      {
-        '<c-_>',
-        function()
-          Snacks.terminal()
-        end,
-        desc = 'which_key_ignore',
-      },
-      {
-        ']]',
-        function()
-          Snacks.words.jump(vim.v.count1)
-        end,
-        desc = 'Next Reference',
-        mode = { 'n', 't' },
-      },
-      {
-        '[[',
-        function()
-          Snacks.words.jump(-vim.v.count1)
-        end,
-        desc = 'Prev Reference',
-        mode = { 'n', 't' },
-      },
-      {
-        '<leader>N',
-        desc = 'Neovim News',
-        function()
-          Snacks.win {
-            file = vim.api.nvim_get_runtime_file('doc/news.txt', false)[1],
-            width = 0.6,
-            height = 0.6,
-            wo = {
-              spell = false,
-              wrap = false,
-              signcolumn = 'yes',
-              statuscolumn = ' ',
-              conceallevel = 3,
-            },
-          }
-        end,
       },
     },
     init = function()
