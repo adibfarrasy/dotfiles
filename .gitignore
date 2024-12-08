@@ -1,0 +1,9 @@
+.settings
+.classpath
+.project
+bin/
+lib/
+.groovylintrc.json
+.metadata
+tmp
+.factorypath
