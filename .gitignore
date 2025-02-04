@@ -7,3 +7,4 @@ lib/
 .metadata
 tmp
 .factorypath
+kls_database.db

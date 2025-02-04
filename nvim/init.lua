@@ -102,7 +102,7 @@ vim.g.have_nerd_font = true
 vim.opt.number = true
 -- You can also add relative line numbers, for help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -168,6 +168,24 @@ vim.opt.wrap = false
 
 vim.o.background = 'dark'
 
+function SimpleTabline()
+  local s = ''
+  for i = 1, vim.fn.tabpagenr '$' do
+    local winnr = vim.fn.tabpagewinnr(i)
+    local bufnr = vim.fn.tabpagebuflist(i)[winnr]
+    local filename = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t')
+    if filename == '' then
+      filename = '[No Name]'
+    end
+    local tabnr = (i == vim.fn.tabpagenr()) and '%#TabLineSel#' or '%#TabLine#'
+    s = s .. tabnr .. ' ' .. filename .. ' '
+  end
+  s = s .. '%#TabLineFill#'
+  return s
+end
+
+vim.o.tabline = '%!v:lua.SimpleTabline()'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -190,7 +208,6 @@ vim.keymap.set('v', '<S-TAB>', '<gv', { noremap = true })
 -- Better shifting lines
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { noremap = true })
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { noremap = true })
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { noremap = true })
 
 -- Better window resize
 vim.keymap.set('n', '<M-h>', '<C-w>5<', { noremap = true })
@@ -199,33 +216,94 @@ vim.keymap.set('n', '<M-k>', '<C-w>+', { noremap = true })
 vim.keymap.set('n', '<M-j>', '<C-w>-', { noremap = true })
 
 -- Custom
-vim.keymap.set('n', '<leader>qf', vim.diagnostic.setqflist, { noremap = true })
-
-local terminal_win = nil
-local terminal_buf = nil
-local toggle_terminal = function()
-  if terminal_win and vim.api.nvim_win_is_valid(terminal_win) then
-    vim.api.nvim_win_close(terminal_win, true)
-    terminal_win = nil
-    if terminal_buf and vim.api.nvim_buf_is_valid(terminal_buf) then
-      vim.api.nvim_buf_delete(terminal_buf, { force = true })
-      terminal_buf = nil
+local toggle = function(win, buf, fn)
+  return function()
+    if win and vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+      win = nil
+      if win and vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_delete(buf, { force = true })
+        buf = nil
+      end
+    else
+      fn()
+      win = vim.api.nvim_get_current_win()
+      buf = vim.api.nvim_get_current_buf()
     end
-  else
-    -- Open terminal in a horizontal split
-    vim.cmd 'split'
-    vim.cmd 'terminal'
-    terminal_win = vim.api.nvim_get_current_win()
-    terminal_buf = vim.api.nvim_get_current_buf()
-    vim.cmd 'startinsert' -- Enter insert mode automatically
   end
 end
 
+local qf_win = nil
+local qf_buf = nil
+vim.keymap.set('n', '<leader>qf', toggle(qf_win, qf_buf, vim.diagnostic.setqflist), { noremap = true })
+
+local terminal_win = nil
+local terminal_buf = nil
 vim.keymap.set({ 'n', 't' }, '<C-_>', '', {
   noremap = true,
   silent = true,
-  callback = toggle_terminal,
+  callback = toggle(terminal_win, terminal_buf, function()
+    -- Open window in a horizontal split
+    vim.cmd.split()
+    vim.cmd.terminal()
+    vim.cmd.startinsert()
+  end),
 })
+
+function ExecuteVisualSelection()
+  local start_pos = vim.fn.getpos "'<"
+  local end_pos = vim.fn.getpos "'>"
+  local lines = vim.api.nvim_buf_get_lines(0, start_pos[2] - 1, end_pos[2], false)
+  local command = table.concat(lines, '\n')
+
+  local buf = vim.api.nvim_create_buf(false, true)
+  local output = vim.fn.system(command)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(output, '\n'))
+  vim.cmd.split()
+  vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), buf)
+  vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+  vim.api.nvim_buf_set_option(buf, 'readonly', true)
+end
+
+vim.keymap.set('v', '<leader>x', ExecuteVisualSelection, { noremap = true })
+
+-- Poor man's syntax highlighting
+local word = ''
+vim.api.nvim_create_autocmd('CursorHold', {
+  callback = function()
+    vim.fn.clearmatches()
+    word = vim.fn.expand '<cword>'
+    if #word > 6 then
+      vim.fn.matchadd('Search', '\\<' .. word .. '\\>')
+    end
+  end,
+})
+
+vim.g.cached_picker = nil
+function GetCachedPicker(to_search)
+  local cached = to_search or vim.g.cached_picker
+  if cached then
+    -- reset layout strategy and get_window_options if default as only one is valid
+    -- and otherwise unclear which was actually set
+    if cached.layout_strategy == require('telescope.config').layout_strategy then
+      cached.layout_strategy = nil
+    end
+    if cached.get_window_options == require('telescope.pickers.window').get_window_options then
+      cached.get_window_options = nil
+    end
+    require('telescope.pickers').new({}, cached):find()
+  else
+    require('telescope.builtin').live_grep {
+      attach_mappings = function(_, map)
+        map('i', '<cr>', function(prompt_bufnr)
+          cached = require('telescope.actions.state').get_current_picker(prompt_bufnr)
+          require('telescope.actions').select_default(prompt_bufnr)
+        end)
+        return true
+      end,
+    }
+  end
+end
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -233,7 +311,7 @@ vim.keymap.set({ 'n', 't' }, '<C-_>', '', {
 --
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 vim.keymap.set('n', '<leader>p', ':echo expand("%:p")<CR>', { noremap = true, silent = true })
 
@@ -301,7 +379,7 @@ local function mergeTables(...)
   return result
 end
 
-local function listFilesOfType(dir, filetype)
+function ListFilesOfType(dir, filetype)
   local files = {}
 
   local function scan(directory)
@@ -349,10 +427,6 @@ local function search_up(dir_or_file)
     end
   end
   return found
-end
-
-local get_selection = function()
-  return vim.fn.getregion(vim.fn.getpos '.', vim.fn.getpos 'v', { mode = vim.fn.mode() })
 end
 
 local function add_to_package_path(base_dir)
@@ -466,18 +540,74 @@ require('lazy').setup({
 
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
+      --
+      local telescope = require 'telescope.sorters'
+
+      local priority_words = {
+        ['interface'] = 1,
+        ['class'] = 1,
+        ['extends'] = 2,
+        ['implements'] = 2,
+
+        -- exludes
+        ['import'] = -1,
+      }
+
+      local priority_sorter = telescope.Sorter:new {
+        scoring_function = function(_, _, line)
+          local score = 100
+          local lower_line = line:lower()
+
+          for found, priority in pairs(priority_words) do
+            if lower_line:find(found) then
+              score = priority -- lower number = higher priority
+              break
+            end
+          end
+
+          return score
+        end,
+      }
+
       require('telescope').setup {
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
         defaults = {
-          -- mappings = {
-          --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-          -- },
+          sorter = priority_sorter,
+          on_input_filter_cb = function(prompt)
+            return { prompt = vim.fn.escape(prompt, '^$()%.[]*+-?') }
+          end,
+          mappings = {
+            i = {
+              ['<C-r>'] = 'to_fuzzy_refine',
+            },
+            n = {
+              ['i'] = function()
+                local action_state = require 'telescope.actions.state'
+                local picker = action_state.get_current_picker(vim.api.nvim_get_current_buf())
+                picker:reset_prompt()
+                vim.cmd 'startinsert'
+              end,
+            },
+          },
+          path_display = { 'truncate' },
+          layout_config = {
+            horizontal = {
+              width = 0.96,
+              height = 0.96,
+              preview_width = 0.75,
+            },
+          },
+          initial_mode = 'normal',
         },
         pickers = {
           live_grep = {
             previewer = true,
+            sorter = priority_sorter,
+            on_input_filter_cb = function(prompt)
+              return { prompt = vim.fn.escape(prompt, '^$()%.[]*+-?') }
+            end,
           },
         },
         extensions = {
@@ -498,39 +628,19 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
-      vim.keymap.set('v', '<space>sg', function()
-        require('telescope.builtin').live_grep {
-          default_text = table.concat(get_selection()),
-        }
-      end)
+      vim.keymap.set('n', '<leader>sg', GetCachedPicker, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
-      -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to telescope to change theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-          winblend = 10,
-          previewer = false,
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
-
-      -- Also possible to pass additional configuration options.
-      --  See `:help telescope.builtin.live_grep()` for information about particular keys
-      vim.keymap.set('n', '<leader>s/', function()
-        builtin.live_grep {
-          grep_open_files = true,
-          prompt_title = 'Live Grep in Open Files',
-        }
-      end, { desc = '[S]earch [/] in Open Files' })
-
-      -- Shortcut for searching your neovim configuration files
-      vim.keymap.set('n', '<leader>sn', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
-      end, { desc = '[S]earch [N]eovim files' })
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'TelescopePreviewerLoaded',
+        callback = function()
+          vim.wo.wrap = true
+          vim.wo.number = true
+        end,
+      })
     end,
   },
 
@@ -548,6 +658,8 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
     },
     config = function()
+      vim.lsp.set_log_level 'info'
+
       -- Brief Aside: **What is LSP?**
       --
       -- LSP is an acronym you've probably heard, but might not understand what it is.
@@ -596,7 +708,14 @@ require('lazy').setup({
           map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
-          map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('gr', function()
+            local refs = nil
+            refs = require('telescope.builtin').lsp_references()
+            if refs == nil then
+              refs = GetCachedPicker(vim.fn.expand '<cword>')
+            end
+            return refs
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
@@ -617,7 +736,7 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
-          map('<leader>r', vim.lsp.buf.rename, '[R]e[n]ame')
+          map('<leader>r', vim.lsp.buf.rename, '[R]ename')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
@@ -665,9 +784,8 @@ require('lazy').setup({
       -- NOTE: might want to revisit this. It's a temporary fix to prevent LSP's autoformatting.
       capabilities.textDocument.formatting = { dynamicRegistration = false }
 
-      -- for jdtls and groovyls.
-      local gradle_workspace_dir = search_up 'settings.gradle' or '.'
-      local gradle_subproject_dir = search_up 'build.gradle' or '.'
+      -- for groovyls.
+      -- local gradle_workspace_dir = search_up 'settings.gradle' or search_up 'build.gradle' or '.'
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -697,7 +815,15 @@ require('lazy').setup({
         pyright = {},
         mypy = {},
 
-        rust_analyzer = {},
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              check = {
+                allTargets = false,
+              },
+            },
+          },
+        },
 
         ts_ls = {},
         eslint = {},
@@ -726,74 +852,28 @@ require('lazy').setup({
           filetypes = { 'templ', 'astro', 'javascript', 'typescript', 'react' },
           init_options = { userLanguages = { templ = 'html' } },
         },
-        jdtls = {
+        -- groovyls = {
+        --   cmd = {
+        --     os.getenv 'HOME' .. '/.sdkman/candidates/java/17.0.13-librca/bin/java',
+        --     '-jar',
+        --     os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/groovy-language-server/build/libs/groovy-language-server-all.jar',
+        --   },
+        --   filetypes = {
+        --     'groovy',
+        --   },
+        --   root_dir = require('lspconfig').util.root_pattern('gradlew', 'mvnw', '.git'),
+        --   settings = {
+        --     groovy = {
+        --       classpath = mergeTables(
+        --         ListFilesOfType(os.getenv 'HOME' .. '/.gradle/caches/modules-2/files-2.1', 'jar'),
+        --         ListFilesOfType(gradle_workspace_dir, 'jar')
+        --       ),
+        --     },
+        --   },
+        -- },
+        kotlin_language_server = {
           cmd = {
-            os.getenv 'HOME' .. '/.sdkman/candidates/java/21.0.5-jbr/bin/java',
-            '-Declipse.application=org.eclipse.jdt.ls.core.id1',
-            '-Dosgi.bundles.defaultStartLevel=4',
-            '-Declipse.product=org.eclipse.jdt.ls.core.product',
-            '-Dlog.protocol=true',
-            '-Dlog.level=ALL',
-            '-Xmx1g',
-            '-jar',
-            os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_1.6.900.v20240613-2009.jar',
-            '-configuration',
-            os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/jdtls/config_mac_arm',
-            '-data',
-            gradle_workspace_dir,
-          },
-          root_dir = vim.fs.dirname(vim.fs.find({ 'build.gradle', '.git', 'pom.xml' }, { upward = true })[1]),
-          on_attach = function(client)
-            client.server_capabilities.documentFormattingProvider = false
-            client.server_capabilities.documentRangeFormattingProvider = false
-          end,
-          settings = {
-            java = {
-              project = {
-                referencedLibraries = {
-                  gradle_workspace_dir .. '/lib/**/*.jar',
-                },
-              },
-              format_on_save = false,
-              configuration = {
-                -- See https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
-                -- And search for `interface RuntimeOption`
-                -- The `name` is NOT arbitrary, but must match one of the elements from `enum ExecutionEnvironment` in the link above
-                runtimes = {
-                  {
-                    name = 'JavaSE-21',
-                    path = os.getenv 'HOME' .. '/.sdkman/candidates/java/21.0.5-jbr',
-                  },
-                  {
-                    name = 'JavaSE-17',
-                    path = os.getenv 'HOME' .. '/.sdkman/candidates/java/17.0.13-librca',
-                  },
-                  {
-                    name = 'JavaSE-1.8',
-                    path = os.getenv 'HOME' .. '/.sdkman/candidates/java/8.0.432-librca',
-                  },
-                },
-              },
-            },
-          },
-        },
-        groovyls = {
-          cmd = {
-            os.getenv 'HOME' .. '/.sdkman/candidates/java/17.0.13-librca/bin/java',
-            '-jar',
-            os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/groovy-language-server/build/libs/groovy-language-server-all.jar',
-          },
-          filetypes = {
-            'groovy',
-          },
-          root_dir = require('lspconfig').util.root_pattern('gradlew', 'mvnw', '.git'),
-          settings = {
-            groovy = {
-              classpath = mergeTables(
-                listFilesOfType(os.getenv 'HOME' .. '/.gradle/caches/modules-2/files-2.1', 'jar'),
-                listFilesOfType(gradle_workspace_dir, 'jar')
-              ),
-            },
+            os.getenv 'HOME' .. '/Documents/kotlin-language-server/server/build/install/server/bin/kotlin-language-server',
           },
         },
       }
@@ -811,7 +891,8 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
-        'npm-groovy-lint',
+        -- 'npm-groovy-lint',
+        'ktlint',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -828,23 +909,21 @@ require('lazy').setup({
         },
       }
 
+      local soulls_path = os.getenv 'HOME' .. '/Projects/soulls/target/release/soulls'
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'groovy',
+        callback = function()
+          vim.lsp.start {
+            name = 'soulls',
+            cmd = { soulls_path },
+            root_dir = vim.fs.root(0, { 'build.gradle', '.git' }),
+          }
+        end,
+      })
+
       vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
       vim.filetype.add { extension = { templ = 'templ' } }
-    end,
-  },
-
-  {
-    'nvim-java/nvim-java',
-    config = function()
-      require('java').setup {
-        java_debug_adapter = {
-          enable = true,
-        },
-        jdk = {
-          -- install jdk using mason.nvim
-          auto_install = false,
-        },
-      }
     end,
   },
 
@@ -869,7 +948,8 @@ require('lazy').setup({
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
         typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         terraform = { 'tofu_fmt' },
-        groovy = { 'npm-groovy-lint' },
+        -- groovy = { 'npm-groovy-lint' },
+        kotlin = { 'ktlint' },
       },
     },
   },
@@ -1038,6 +1118,16 @@ require('lazy').setup({
         'javascript',
         'typescript',
         'tsx',
+        'sql',
+        'json',
+        'csv',
+        'python',
+        'go',
+        'rust',
+        'java',
+        'kotlin',
+        'jq',
+        'markdown',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1095,7 +1185,6 @@ require('lazy').setup({
     end,
   },
 
-  --  Auto-pair brackets
   'jiangmiao/auto-pairs',
 
   {
@@ -1128,21 +1217,6 @@ require('lazy').setup({
 
   'NoahTheDuke/vim-just',
   'gleam-lang/gleam.vim',
-  -- {
-  --   'adibfarrasy/simpanan.nvim',
-  --   dependencies = {
-  --     'MunifTanjim/nui.nvim',
-  --   },
-  --   build = 'make -C simpanan',
-  --   config = function()
-  --     vim.keymap.set('n', '<leader>sc', require('simpanan').list_connections)
-  --     vim.keymap.set('v', '<leader>se', require('simpanan').execute)
-  --     require('simpanan').setup {
-  --       max_row_limit = 20,
-  --       debug_mode = false,
-  --     }
-  --   end,
-  -- },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1155,6 +1229,17 @@ require('lazy').setup({
       require('chatgpt').setup {
         openai_params = {
           model = 'gpt-3.5-turbo',
+          max_tokens = 600,
+        },
+        chat = {
+          sessions_window = {
+            active_sign = '',
+            inactive_sign = '',
+            current_line_sign = '',
+          },
+        },
+        highlights = {
+          active_session = 'Visual',
         },
       }
 
@@ -1186,40 +1271,6 @@ require('lazy').setup({
       quickfile = { enabled = true },
       statuscolumn = { enabled = true },
       words = { enabled = true },
-      lazygit = {
-        {
-          -- automatically configure lazygit to use the current colorscheme
-          -- and integrate edit with the current neovim instance
-          configure = true,
-          -- extra configuration for lazygit that will be merged with the default
-          -- snacks does NOT have a full yaml parser, so if you need `"test"` to appear with the quotes
-          -- you need to double quote it: `"\"test\""`
-          config = {
-            os = { editPreset = 'nvim-remote' },
-            gui = {
-              -- set to an empty string "" to disable icons
-              nerdFontsVersion = '3',
-            },
-          },
-          theme_path = vim.fs.normalize(vim.fn.stdpath 'cache' .. '/lazygit-theme.yml'),
-          -- Theme for lazygit
-          theme = {
-            [241] = { fg = 'Special' },
-            activeBorderColor = { fg = 'MatchParen', bold = true },
-            cherryPickedCommitBgColor = { fg = 'Identifier' },
-            cherryPickedCommitFgColor = { fg = 'Function' },
-            defaultFgColor = { fg = 'Normal' },
-            inactiveBorderColor = { fg = 'FloatBorder' },
-            optionsTextColor = { fg = 'Function' },
-            searchingActiveBorderColor = { fg = 'MatchParen', bold = true },
-            selectedLineBgColor = { bg = 'Visual' }, -- set to `default` to have no background colour
-            unstagedChangesColor = { fg = 'DiagnosticError' },
-          },
-          win = {
-            style = 'lazygit',
-          },
-        },
-      },
     },
     keys = {
       {
@@ -1265,27 +1316,6 @@ require('lazy').setup({
         desc = 'Git Blame Line',
       },
       {
-        '<leader>gf',
-        function()
-          Snacks.lazygit.log_file()
-        end,
-        desc = 'Lazygit Current File History',
-      },
-      {
-        '<leader>gg',
-        function()
-          Snacks.lazygit()
-        end,
-        desc = 'Lazygit',
-      },
-      {
-        '<leader>gl',
-        function()
-          Snacks.lazygit.log()
-        end,
-        desc = 'Lazygit Log (cwd)',
-      },
-      {
         '<leader>un',
         function()
           Snacks.notifier.hide()
@@ -1319,6 +1349,22 @@ require('lazy').setup({
         end,
       })
     end,
+    config = function()
+      local snacks = require 'snacks'
+      vim.lsp.handlers['window/showMessage'] = function(_, result, _)
+        if result.type == 1 then
+          snacks.notifier.notify(result.message, 'error')
+        elseif result.type == 2 then
+          snacks.notifier.notify(result.message, 'warn')
+        elseif result.type == 3 then
+          snacks.notifier.notify(result.message, 'info')
+        elseif result.type == 4 then
+          snacks.notifier.notify(result.message, 'debug')
+        else
+          snacks.notifier.notify(result.message, 'info')
+        end
+      end
+    end,
   },
 
   {
@@ -1327,6 +1373,10 @@ require('lazy').setup({
       { '<leader>bs', '<cmd>BlamerToggle<CR>', desc = 'Toggle git blame' },
     },
   },
+
+  'mfussenegger/nvim-jdtls',
+
+  -- HACK: add more plugins
 
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for kickstart
   --
@@ -1366,7 +1416,8 @@ require('lazy').setup({
 
 vim.g.border_chars = { '┌', '─', '┐', '│', '┘', '─', '└', '│' }
 
-add_to_package_path(os.getenv 'HOME' .. '/Documents/ChatGPT.nvim/lua')
+-- For testing local plugins
+-- add_to_package_path(os.getenv 'HOME' .. '/Documents/ChatGPT.nvim/lua')
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
