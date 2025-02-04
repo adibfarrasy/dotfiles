@@ -281,22 +281,24 @@ vim.api.nvim_create_autocmd('CursorHold', {
 
 vim.g.cached_picker = nil
 function GetCachedPicker(to_search)
-  local cached = to_search or vim.g.cached_picker
-  if cached then
+  if not to_search then
     -- reset layout strategy and get_window_options if default as only one is valid
     -- and otherwise unclear which was actually set
-    if cached.layout_strategy == require('telescope.config').layout_strategy then
-      cached.layout_strategy = nil
+    if to_search.layout_strategy == require('telescope.config').layout_strategy then
+      to_search.layout_strategy = nil
     end
-    if cached.get_window_options == require('telescope.pickers.window').get_window_options then
-      cached.get_window_options = nil
+    if to_search.get_window_options == require('telescope.pickers.window').get_window_options then
+      to_search.get_window_options = nil
     end
-    require('telescope.pickers').new({}, cached):find()
+    require('telescope.pickers').new({}, to_search):find()
   else
     require('telescope.builtin').live_grep {
+      on_input_filter_cb = function()
+        return { prompt = to_search }
+      end,
       attach_mappings = function(_, map)
         map('i', '<cr>', function(prompt_bufnr)
-          cached = require('telescope.actions.state').get_current_picker(prompt_bufnr)
+          to_search = require('telescope.actions.state').get_current_picker(prompt_bufnr)
           require('telescope.actions').select_default(prompt_bufnr)
         end)
         return true
