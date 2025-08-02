@@ -281,29 +281,36 @@ vim.api.nvim_create_autocmd('CursorHold', {
 
 vim.g.cached_picker = nil
 function GetCachedPicker(to_search)
-  if not to_search then
+  if vim.g.cached_picker then
     -- reset layout strategy and get_window_options if default as only one is valid
     -- and otherwise unclear which was actually set
-    if to_search.layout_strategy == require('telescope.config').layout_strategy then
-      to_search.layout_strategy = nil
+    if vim.g.cached_picker.layout_strategy == require('telescope.config').layout_strategy then
+      vim.g.cached_picker.layout_strategy = nil
     end
-    if to_search.get_window_options == require('telescope.pickers.window').get_window_options then
-      to_search.get_window_options = nil
+    if vim.g.cached_picker.get_window_options == require('telescope.pickers.window').get_window_options then
+      vim.g.cached_picker.get_window_options = nil
     end
-    require('telescope.pickers').new({}, to_search):find()
+    require('telescope.pickers').new({}, vim.g.cached_picker):find()
   else
-    require('telescope.builtin').live_grep {
-      on_input_filter_cb = function()
-        return { prompt = to_search }
-      end,
-      attach_mappings = function(_, map)
-        map('i', '<cr>', function(prompt_bufnr)
-          to_search = require('telescope.actions.state').get_current_picker(prompt_bufnr)
-          require('telescope.actions').select_default(prompt_bufnr)
-        end)
-        return true
-      end,
+    local mappings = function(_, map)
+      map('i', '<cr>', function(prompt_bufnr)
+        to_search = require('telescope.actions.state').get_current_picker(prompt_bufnr)
+        require('telescope.actions').select_default(prompt_bufnr)
+      end)
+      return true
+    end
+
+    local opts = {
+      attach_mappings = mappings,
     }
+
+    if to_search then
+      opts.on_input_filter_cb = function()
+        return { prompt = to_search }
+      end
+    end
+
+    require('telescope.builtin').live_grep(opts)
   end
 end
 
@@ -552,7 +559,7 @@ require('lazy').setup({
         ['implements'] = 2,
 
         -- exludes
-        ['import'] = -1,
+        ['import'] = 101,
       }
 
       local priority_sorter = telescope.Sorter:new {
@@ -636,6 +643,16 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
+      vim.keymap.set('n', 'L', function()
+        vim.diagnostic.open_float(nil, {
+          scope = 'line',
+          focusable = true,
+          border = 'rounded',
+          source = 'always',
+          prefix = ' ',
+        })
+      end, { desc = 'Show line diagnostics' })
+
       vim.api.nvim_create_autocmd('User', {
         pattern = 'TelescopePreviewerLoaded',
         callback = function()
@@ -707,7 +724,24 @@ require('lazy').setup({
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          -- map('gd', function()
+          --   local defs = nil
+          --   defs = require('telescope.builtin').lsp_definitions()
+          --   if defs == nil then
+          --     local def_word = vim.fn.expand '<cword>'
+          --     vim.cmd 'normal! gg'
+          --     local line_num = vim.fn.search('\\C' .. def_word, 'W')
+          --
+          --     if line_num > 0 then
+          --       local col = vim.fn.col '.'
+          --       vim.fn.cursor(line_num, col)
+          --     end
+          --
+          --     vim.cmd 'nohlsearch'
+          --   end
+          --   return defs
+          -- end, '[G]oto [D]efinition')
+          map('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
 
           -- Find references for the word under your cursor.
           map('gr', function()
@@ -854,30 +888,6 @@ require('lazy').setup({
           filetypes = { 'templ', 'astro', 'javascript', 'typescript', 'react' },
           init_options = { userLanguages = { templ = 'html' } },
         },
-        -- groovyls = {
-        --   cmd = {
-        --     os.getenv 'HOME' .. '/.sdkman/candidates/java/17.0.13-librca/bin/java',
-        --     '-jar',
-        --     os.getenv 'HOME' .. '/.local/share/nvim/mason/packages/groovy-language-server/build/libs/groovy-language-server-all.jar',
-        --   },
-        --   filetypes = {
-        --     'groovy',
-        --   },
-        --   root_dir = require('lspconfig').util.root_pattern('gradlew', 'mvnw', '.git'),
-        --   settings = {
-        --     groovy = {
-        --       classpath = mergeTables(
-        --         ListFilesOfType(os.getenv 'HOME' .. '/.gradle/caches/modules-2/files-2.1', 'jar'),
-        --         ListFilesOfType(gradle_workspace_dir, 'jar')
-        --       ),
-        --     },
-        --   },
-        -- },
-        kotlin_language_server = {
-          cmd = {
-            os.getenv 'HOME' .. '/Documents/kotlin-language-server/server/build/install/server/bin/kotlin-language-server',
-          },
-        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -911,15 +921,25 @@ require('lazy').setup({
         },
       }
 
-      local soulls_path = os.getenv 'HOME' .. '/Projects/soulls/target/release/soulls'
+      local lsp_path = os.getenv 'HOME' .. '/Projects/lspintar/target/debug/lspintar'
+
+      local function find_root_dir(bufnr)
+        local workspace_root = vim.fs.root(bufnr, { 'settings.gradle', '.git' })
+        if workspace_root then
+          return workspace_root
+        end
+
+        -- Fall back to single project root
+        return vim.fs.root(bufnr, { 'build.gradle', 'pom.xml' })
+      end
 
       vim.api.nvim_create_autocmd('FileType', {
         pattern = 'groovy',
         callback = function()
           vim.lsp.start {
-            name = 'soulls',
-            cmd = { soulls_path },
-            root_dir = vim.fs.root(0, { 'build.gradle', '.git' }),
+            name = 'lspintar',
+            cmd = { lsp_path },
+            root_dir = find_root_dir(0),
           }
         end,
       })
@@ -950,8 +970,6 @@ require('lazy').setup({
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
         typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
         terraform = { 'tofu_fmt' },
-        -- groovy = { 'npm-groovy-lint' },
-        kotlin = { 'ktlint' },
       },
     },
   },
@@ -1133,7 +1151,10 @@ require('lazy').setup({
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
-      highlight = { enable = true },
+      highlight = {
+        enable = true,
+        additional_vim_regex_highlighting = { 'javadoc' },
+      },
       indent = { enable = true },
     },
     config = function(_, opts)
@@ -1376,7 +1397,7 @@ require('lazy').setup({
     },
   },
 
-  'mfussenegger/nvim-jdtls',
+  -- 'mfussenegger/nvim-jdtls',
 
   -- HACK: add more plugins
 
