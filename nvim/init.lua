@@ -820,6 +820,9 @@ require('lazy').setup({
       -- NOTE: might want to revisit this. It's a temporary fix to prevent LSP's autoformatting.
       capabilities.textDocument.formatting = { dynamicRegistration = false }
 
+      local util = require 'lspconfig.util'
+      local lspintar_path = os.getenv 'HOME' .. '/Projects/lspintar/target/debug/lspintar'
+
       -- for groovyls.
       -- local gradle_workspace_dir = search_up 'settings.gradle' or search_up 'build.gradle' or '.'
 
@@ -832,7 +835,7 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      local servers = {
+      local mason_servers = {
         -- clangd = {},
         gopls = {
           completeUnimported = true,
@@ -848,7 +851,7 @@ require('lazy').setup({
           },
         },
 
-        pyright = {},
+        pylsp = {},
         mypy = {},
 
         rust_analyzer = {
@@ -900,7 +903,7 @@ require('lazy').setup({
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
+      local ensure_installed = vim.tbl_keys(mason_servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format lua code
         -- 'npm-groovy-lint',
@@ -911,7 +914,7 @@ require('lazy').setup({
       require('mason-lspconfig').setup {
         handlers = {
           function(server_name)
-            local server = servers[server_name] or {}
+            local server = mason_servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for tsserver)
@@ -921,7 +924,28 @@ require('lazy').setup({
         },
       }
 
-      local lsp_path = os.getenv 'HOME' .. '/Projects/lspintar/target/debug/lspintar'
+      local configs = require 'lspconfig.configs'
+
+      if not configs.lspintar then
+        configs.lspintar = {
+          default_config = {
+            cmd = { lspintar_path },
+            filetypes = { 'groovy', 'java' },
+            root_dir = function(fname)
+              return util.root_pattern('settings.gradle', '.git')(fname)
+                or util.root_pattern('build.gradle', 'pom.xml')(fname)
+                or util.root_pattern 'META-INF'(fname)
+            end,
+            init_options = {
+              gradle_cache_dir = os.getenv 'HOME' .. '/.sdkman/candidates/gradle/6.3/caches/modules-2/files-2.1',
+              build_on_init = false,
+            },
+            settings = {},
+          },
+        }
+      end
+
+      require('lspconfig').lspintar.setup {}
 
       local function find_root_dir(bufnr)
         local workspace_root = vim.fs.root(bufnr, { 'settings.gradle', '.git' })
@@ -933,16 +957,20 @@ require('lazy').setup({
         return vim.fs.root(bufnr, { 'build.gradle', 'pom.xml' })
       end
 
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = 'groovy',
-        callback = function()
-          vim.lsp.start {
-            name = 'lspintar',
-            cmd = { lsp_path },
-            root_dir = find_root_dir(0),
-          }
-        end,
-      })
+      -- vim.api.nvim_create_autocmd('FileType', {
+      --   pattern = 'groovy',
+      --   callback = function()
+      --     vim.lsp.start {
+      --       name = 'lspintar',
+      --       cmd = { lspintar_path },
+      --       root_dir = find_root_dir(0),
+      --       init_options = {
+      --         gradle_cache_dir = os.getenv 'HOME' .. '/.sdkman/candidates/gradle/6.3/caches/modules-2/files-2.1',
+      --         build_on_init = false,
+      --       },
+      --     }
+      --   end,
+      -- })
 
       vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
       vim.filetype.add { extension = { templ = 'templ' } }
@@ -1078,6 +1106,9 @@ require('lazy').setup({
 
       -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none'
+
+      vim.api.nvim_set_hl(0, '@variable', { link = 'Identifier' })
+      vim.api.nvim_set_hl(0, '@variable.parameter', { link = 'GruvboxFg1' })
     end,
   },
 
@@ -1162,6 +1193,18 @@ require('lazy').setup({
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup(opts)
+
+      local parser_config = require('nvim-treesitter.parsers').get_parser_configs()
+
+      parser_config.groovy = {
+        install_info = {
+          url = '/Users/adibf/Projects/tree-sitter-groovy', -- local path
+          files = { 'src/parser.c' },
+          branch = 'main',
+          generate_requires_npm = false,
+        },
+        filetype = 'groovy',
+      }
 
       -- There are additional nvim-treesitter modules that you can use to interact
       -- with nvim-treesitter. You should go explore a few and see what interests you:
